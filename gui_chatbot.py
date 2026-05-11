@@ -63,7 +63,7 @@ def handle_chat(user_input):
         state = None
         return res.json()["message"]
 
-    # OLD FEATURE - Exception COUNT Feature
+    # Exception COUNT Feature
     text = user_input.lower()
 
     for name in ["akhil", "rajesh", "rahul", "siddharth"]:
