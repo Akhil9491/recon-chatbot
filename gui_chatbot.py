@@ -17,7 +17,7 @@ def handle_chat(user_input):
     if user_input.lower() == "exit":
         root.quit()
 
-    # START FLOW
+    # START FLOW - 'Update Exception' Feature
     if "update exception" in user_input.lower():
         state = "ask_control"
         return "Select recon from dropdown below"
@@ -26,7 +26,7 @@ def handle_chat(user_input):
     if state == "ask_control":
         return "Choose recon from dropdown and click send"
 
-    # STEP 2
+    # STEP 2 - Date and Age Check
     if state == "ask_date":
         try:
             trade_date, age = user_input.split(",")
@@ -39,14 +39,14 @@ def handle_chat(user_input):
             f"{API_BASE}/check_record",
             params=data
         )
-
+        # If record doesn't exist
         if not res.json()["exists"]:
             return "Record not found"
 
         state = "ask_codes"
         return "Enter reason and resolution codes for Exception (R1, RES1)"
 
-    # STEP 3
+    # STEP 3 -- Update Exception with Reason and Resolution Codes
     if state == "ask_codes":
         try:
             reason, resolution = user_input.split(",")
@@ -63,7 +63,7 @@ def handle_chat(user_input):
         state = None
         return res.json()["message"]
 
-    # OLD FEATURE
+    # OLD FEATURE - Exception COUNT Feature
     text = user_input.lower()
 
     for name in ["akhil", "rajesh", "rahul", "siddharth"]:
@@ -71,7 +71,7 @@ def handle_chat(user_input):
             res = requests.get(f"{API_BASE}/exceptions/{name}")
             return f"Exception count for {name} is {res.json()['exception_count']}"
 
-    return "I didn't understand"
+    return "I didn't understand could you please rephrase?"
 
 
 # =========================
