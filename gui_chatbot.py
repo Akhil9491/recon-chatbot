@@ -63,15 +63,77 @@ def handle_chat(user_input):
         state = None
         return res.json()["message"]
 
-    # Exception COUNT Feature
+    # Trade Quantity Difference exception details
     text = user_input.lower()
 
     for name in ["akhil", "rajesh", "rahul", "siddharth"]:
-        if name in text and "exception" in text:
-            res = requests.get(f"{API_BASE}/exceptions/{name}")
-            return f"Exception count for {name} is {res.json()['exception_count']}"
+        if name in text and ("quantity exceptions" in text or "trade quantity exceptions" in text or "trade quantity" in text):
+            res = requests.get(f"{API_BASE}/quantity_exceptions/details/{name}")
+            if res.status_code != 200:
+                return "Failed to fetch exception details" \
+                "Please ensure the control name or ColumnHeader is correct and try again."
 
-    return "I didn't understand could you please rephrase?"
+            exceptions = res.json().get("exceptions", [])
+            if not exceptions:
+                return "No Trade Quantity exceptions found"
+
+            lines = []
+            for exc in exceptions:
+                lines.append(
+                    f"{exc['trade_date']} age={exc['age']} Amount_Difference={exc['Amount_Difference']} Quantity_Difference={exc['Quantity_Difference']}"
+                )
+            return "\n".join(lines)
+        
+
+
+    # Trade Amount Difference exception details list
+    text = user_input.lower()
+
+    for name in ["akhil", "rajesh", "rahul", "siddharth"]:
+        if name in text and ("amount exceptions" in text or "trade amount exceptions" in text or "trade amount" in text):
+            res = requests.get(f"{API_BASE}/amount_exceptions/details/{name}")
+            if res.status_code != 200:
+                return "Failed to fetch exception details" \
+                "Please ensure the control name or Column Header is correct and try again."
+
+            exceptions = res.json().get("exceptions", [])
+            if not exceptions:
+                return "No Trade Amount exceptions found"
+
+            lines = []
+            for exc in exceptions:
+                lines.append(
+                    f"{exc['trade_date']} age={exc['age']} Amount_Difference={exc['Amount_Difference']} Quantity_Difference={exc['Quantity_Difference']}"
+                )
+            return "\n".join(lines)
+
+
+
+    # OLD FEATURE - Exception COUNT Feature
+    names = ["akhil", "rajesh", "rahul", "siddharth"]
+
+    for name in names:
+        if name in text and any(phrase in text for phrase in [
+            "exception records",
+            "exception items",
+            "exception transactions",
+            "active exception records",
+            "raised exception", "active exception"
+        ]):
+            res = requests.get(f"{API_BASE}/exception_records/{name}")
+            return f"Exception record count for {name} is {res.json()['exception_count']}"
+
+        if name in text and any(phrase in text for phrase in [
+            "single ton records",
+            "single ton exceptions",
+            "single ton transactions",
+            "single ton txns", "active single ton exceptions", "single ton txn"
+        ]):
+            res = requests.get(f"{API_BASE}/single_ton_exception_records/{name}")
+            return f"Single Ton Exception record count for {name} is {res.json()['exception_count']}"
+
+    return "I didn't understand could you please rephrase (or) provide me in detail?"
+
 
 
 # =========================
@@ -114,7 +176,7 @@ root = tk.Tk()
 root.title("Recon Chatbot")
 root.geometry("500x500")
 
-chat_area = scrolledtext.ScrolledText(root, width=60, height=20)
+chat_area = scrolledtext.ScrolledText(root, width=90, height=20)
 chat_area.pack(padx=10, pady=10)
 
 # Dropdown
@@ -126,10 +188,10 @@ recon_dropdown.set("Select Recon")
 
 # Input + Button Frame
 frame = tk.Frame(root)
-frame.pack(pady=10)
+frame.pack(pady=25)
 
-entry = tk.Entry(frame, width=40)
-entry.pack(side=tk.LEFT, padx=5)
+entry = tk.Entry(frame, width=80)
+entry.pack(side=tk.LEFT, padx=15)
 
 send_button = tk.Button(frame, text="Send", command=send_message)
 send_button.pack(side=tk.LEFT)
